@@ -18,7 +18,7 @@
 6. 測試客戶端: [RESTClient] (http://restclient.net/)
 
 ## PostgreSQL
-請先在本機安裝好PostgreSQL, 啟動此服務段將自動建立表格players, 資料表欄位如以下所示:
+請先在本機安裝好PostgreSQL, 啟動此服務端將自動建立表格players, 資料表欄位如以下所示:
 (id是PostgreSQL自動產生)
 
 ![database schema](https://github.com/CarolCheng/lobby/blob/master/docs/databaseschema.png?raw=true?raw=true)
@@ -45,6 +45,35 @@
 |   刪除使用者   	| /api/users/:id 	|    DELETE   	|      --      	| 200 (成功), 404 (無效ID) 	|       --      	|
 | 取得使用者列表 	|   /api/users/  	|     GET     	|      --      	| 200 (成功), 404 (無效ID) 	|  Players JSON 	|
 
+## 編譯此範例
+請將依賴庫[crow]放到目錄 thirdparty/inc/底下, 目錄如以下所示: 
+
+* lobby
+ * CMakeLists.txt
+ * source
+   * pq_conn_pool.cpp
+    * lobby_server.cpp
+ * include
+   * pq_conn_pool.h
+    * db_config.h
+ * thirdparty
+   * inc
+     * crow.h
+      * crow
+
+
+用CMake編譯此範例
+```
+mkdir build
+cd build
+cmake ..
+make
+```
+執行服務端 - 使用者管理 
+```
+./LobbyServer
+```
+
 ## 參考資料
 1. [Using HTTP Methods for RESTful Services] (http://www.restapitutorial.com/lessons/httpmethods.html)
 2. [使用 Flask-RESTful 设计 RESTful API] (http://www.pythondoc.com/flask-restful/second.html#id1)
@@ -52,5 +81,4 @@
 4. [libpqxx 4.0.2 - pqxx::result Class Reference] (http://pqxx.org/devprojects/libpqxx/doc/4.0/html/Reference/a00082.html)
 5. [postgreSQL function for last inserted ID] (http://stackoverflow.com/questions/2944297/postgresql-function-for-last-inserted-id)
 6. [Crow is C++ microframework for web. (inspired by Python Flask)] (https://github.com/ipkn/crow)
-
-
+7. [Clean project management with CMake] (http://newbiz.github.io/tutorials/2011/01/27/Clean-project-management-with-CMake.html)
