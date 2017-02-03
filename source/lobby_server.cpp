@@ -156,6 +156,7 @@ int main(int argc, char* argv[])
 			crow::json::wvalue result = msg;
 			result["id"] = user.id; 
 			auto res = crow::response(response, result);// Created 
+			
 			res.set_header("Location", req.url + "/" + std::to_string(user.id));
 			return res;
 		} else if(req.method == "GET"_method) {
@@ -193,11 +194,9 @@ int main(int argc, char* argv[])
 				return crow::response(400);
 			if(!msg.has("userdata") || msg["userdata"].t() != crow::json::type::String)
 				return crow::response(400);
-			crow::json::wvalue result = msg;
-			result["id"] = id; 
 			// Update a user data in PostgreSQ
 			return crow::response( update_user(id, msg["username"].s(), msg["password"].s()
-				, msg["userdata"].s()), result);
+				, msg["userdata"].s()));
 		} else if(req.method == "GET"_method) {
 			player user;
 			int response = get_user(id, user);
