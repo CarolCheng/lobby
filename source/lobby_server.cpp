@@ -2,6 +2,7 @@
 #include <list>
 #include "pq_conn_pool.h"
 #include "crow.h"
+#include "db_config.h"
 
 struct player
 {
@@ -53,7 +54,7 @@ int add_user(player &user)
 		user.id = c[0].as<int>();
 	}
 	instance->unburrow(dbconn);
-	return (user.id > 0) ? 201 : 404;
+	return (user.id > 0) ? HTTP::to_uint(HTTPStatus::Created) : HTTP::to_uint(HTTPStatus::NotFound);
 }
 int get_user(const int id, player &user) 
 {
@@ -79,7 +80,7 @@ int get_user(const int id, player &user)
 		std::cout<< "Select failed: " << ex.what() << std::endl;
 	}
 	instance->unburrow(dbconn);
-	return (nrow > 0) ? 200 : 404;
+	return (nrow > 0) ? HTTP::to_uint(HTTPStatus::OK) : HTTP::to_uint(HTTPStatus::NotFound);
 }
 int get_users(std::list<player> &lst_user) 
 {
@@ -106,7 +107,7 @@ int get_users(std::list<player> &lst_user)
 		std::cout<< "Select failed: " << ex.what() << std::endl;
 	}
 	instance->unburrow(dbconn);
-	return (nrow > 0) ? 200 : 404;
+	return (nrow > 0) ? HTTP::to_uint(HTTPStatus::OK) : HTTP::to_uint(HTTPStatus::NotFound);
 }
 
 int update_user(const int id, const std::string username, const std::string password , const std::string userdata) 
@@ -116,13 +117,13 @@ int update_user(const int id, const std::string username, const std::string pass
 		, userdata = '"+ userdata +"' \
 		WHERE id = " + std::to_string(id) + ";";
 	// 200: successful update 404: not found
-	return (executeSQL(updatesql)) ? 200 : 404;
+	return (executeSQL(updatesql)) ? HTTP::to_uint(HTTPStatus::OK) : HTTP::to_uint(HTTPStatus::NotFound;
 }
 int delete_user(const int id)
 {
 	std::string deletesql = "DELETE from players where ID = " + std::to_string(id);
 	// 200: successful update 404: not found
-	return (executeSQL(deletesql)) ? 200 : 404;
+	return (executeSQL(deletesql)) ? HTTP::to_uint(HTTPStatus::OK) : HTTP::to_uint(HTTPStatus::NotFound);
 }
 int main(int argc, char* argv[])
 {
@@ -147,7 +148,7 @@ int main(int argc, char* argv[])
 		if(req.method == "POST"_method) {
 			auto msg = crow::json::load(req.body);
 			if(!msg) 
-				return crow::response(400);
+				return crow::response(HTTP::to_uint(HTTPStatus::BadRequest));
 			player user = {-1, msg["username"].s()
 				, msg["password"].s(), msg["userdata"].s()};
 			int response = add_user(user);
@@ -174,7 +175,7 @@ int main(int argc, char* argv[])
 			}
 			return crow::response(response, result);  
 		}
-		return crow::response(400);
+		return crow::response(HTTP::to_uint(HTTPStatus::BadRequest));
 	});
 	
 	CROW_ROUTE(app, "/api/users/<int>")
@@ -186,14 +187,14 @@ int main(int argc, char* argv[])
 			auto msg = crow::json::load(req.body);
 			// Bad request : requested data is not JSON
 			if(!msg) 
-				return crow::response(400);
+				return crow::response(HTTP::to_uint(HTTPStatus::BadRequest));
 			// Bad request : one of JSON data was not in the correct format
 			if(!msg.has("username") || msg["username"].t() != crow::json::type::String)
-				return crow::response(400);
+				return crow::response(HTTP::to_uint(HTTPStatus::BadRequest));
 			if(!msg.has("password") || msg["password"].t() != crow::json::type::String)
-				return crow::response(400);
+				return crow::response(HTTP::to_uint(HTTPStatus::BadRequest));
 			if(!msg.has("userdata") || msg["userdata"].t() != crow::json::type::String)
-				return crow::response(400);
+				return crow::response(HTTP::to_uint(HTTPStatus::BadRequest));
 			// Update a user data in PostgreSQ
 			return crow::response( update_user(id, msg["username"].s(), msg["password"].s()
 				, msg["userdata"].s()));
@@ -209,7 +210,7 @@ int main(int argc, char* argv[])
 			result["userdata"] =  user.userdata;
 			return crow::response(response, result);  
 		}
-		return crow::response(400);
+		return crow::response(HTTP::to_uint(HTTPStatus::BadRequest));
 	});
 	
 	app.port(18080).multithreaded().run();
